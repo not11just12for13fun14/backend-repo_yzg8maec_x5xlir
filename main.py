@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -12,6 +13,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class EchoRequest(BaseModel):
+    message: str
+
+class EchoResponse(BaseModel):
+    reply: str
+
 @app.get("/")
 def read_root():
     return {"message": "Hello from FastAPI Backend!"}
@@ -19,6 +26,18 @@ def read_root():
 @app.get("/api/hello")
 def hello():
     return {"message": "Hello from the backend API!"}
+
+@app.post("/echo", response_model=EchoResponse)
+def echo(req: EchoRequest):
+    # Playful, friendly reply matching the UI's vibe
+    base = req.message.strip()
+    if not base:
+        base = "Say something and I'll riff with you!"
+    reply = (
+        "Beep boop! Mini bot here. You said: \"" + base + "\".\n\n"
+        "I can help brainstorm ideas, explain concepts, or just chat."
+    )
+    return {"reply": reply}
 
 @app.get("/test")
 def test_database():
